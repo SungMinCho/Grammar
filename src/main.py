@@ -95,6 +95,26 @@ class Item(Production):
   def fromProduction(production, dot):
     return Item(production.head, production.body, dot)
 
+  # if A -> a . X b   then yield all X -> . c
+  def closureStep(self, productions):
+    if self.dot < len(self.body.symbols):
+      X = self.body.symbols[self.dot]
+      if not X.isTerminal():
+        for p in productions:
+          if p.head == X:
+            yield Item.fromProduction(p, 0)
+
+  def dotAtEnd(self):
+    return self.dot >= len(self.body.symbols)
+
+  def nextIs(self, X):
+    if self.dotAtEnd:
+      return False
+    return X == self.body.symbols[self.dot]
+
+  def moveDotToRight(self):
+    return Item(self.head, self.body, self.dot + 1)
+
   def __eq__(self, other):
     return Production.__eq__(self, other) and self.dot == other.dot
 
@@ -142,6 +162,34 @@ def enumerate(starting, productions):
       for s in produceOneStep(h, productions):
         i = insertPosition(s, strings)
         strings[i:i] = [s]
+
+####################################################################################
+
+def closure(itemSet, productions):
+  while True:
+    buffer = []
+    for s in itemSet:
+      for x in s.closureStep(productions):
+        if x not in itemSet:
+          buffer.append(x)
+
+    if len(buffer) == 0:
+      return itemSet
+
+    for b in buffer:
+      itemSet.add(b)
+
+def goto(itemSet, X, productions):
+  res = set()
+  for s in itemSet:
+    if s.nextIs(X):
+      res.add(s.moveDotToRight())
+  return closure(res, productions)
+
+def CanonicalLR_0(starting, productions):
+  pass
+
+####################################################################################
 
 def test():
   T = Variable("T")

@@ -443,7 +443,7 @@ def snupl_test():
   # add IDENTS
   IDENTS = Variable("idents")
   p42_1 = Production(IDENTS, String([IDENT]))
-  p42_4 = Production(IDENTS, String([IDENTS, COMMA, IDENT]))
+  p42_2 = Production(IDENTS, String([IDENTS, COMMA, IDENT]))
   p42 = Production(VARDECL, String([IDENTS, COLON, TYPE]))
 
   p43 = Production(SUBROUTINEDECL, String([PROCEDUREDECL, SUBROUTINEBODY, IDENT, SEMICOLON]))

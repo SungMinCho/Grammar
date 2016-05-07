@@ -1,4 +1,8 @@
 from copy import deepcopy
+from graphviz import *
+
+def setToString(s):
+  return '\n'.join([x.__str__() for x in s])
 
 def printSet(s):
   for x in s:
@@ -280,6 +284,18 @@ def CanonicalLR_0(starting, productions):
 
   return (NumberToItems, transition)
 
+def draw_CanonicalLR_0(starting, productions):
+  (NumberToItems, transition) = CanonicalLR_0(starting, productions)
+  dot = Digraph()
+
+  for (k,v) in NumberToItems.items():
+    dot.node(str(k), setToString(v))
+
+  for (From,Sym,To) in transition:
+    dot.edge(str(From), str(To), label=Sym.__str__())
+
+  dot.render('result.dot', view=True)
+
 
 ####################################################################################
 
@@ -307,11 +323,7 @@ def test():
 
   ps = [p1,p2,p3,p4, p5]
 
-  (NtoI, trans) = CanonicalLR_0(E, ps)
-  for i in range(len(NtoI)):
-    print('#', i)
-    printSet(NtoI[i])
-    print()
+  draw_CanonicalLR_0(E, ps)
 
 def main():
   test()

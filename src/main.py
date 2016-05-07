@@ -325,8 +325,155 @@ def test():
 
   draw_CanonicalLR_0(E, ps)
 
+def snupl_test():
+  CHAR = Terminal("char")
+  STRING = Terminal("string")
+  IDENT = Terminal("ident")
+  NUMBER = Terminal("number")
+  BOOLEAN = Terminal("boolean")
+  TYPE = Variable("type")
+  BASETYPE = Terminal("basetype")
+  LBRAK = Terminal("\"[\"")
+  RBRAK = Terminal("\"]\"")
+  QUALIDENT = Variable("qualident")
+  EXPRESSION = Variable("expression")
+  FACTOP = Terminal("factOp")
+  RELOP = Terminal("relOp")
+  FACTOR = Variable("factor")
+  LPAREN = Terminal("\"(\"")
+  RPAREN = Terminal("\")\"")
+  NOT = Terminal("\"!\"")
+  SUBROUTINECALL = Variable("subroutineCall")
+  TERM = Variable("term")
+  SIMPLEEXPR = Variable("simpleexpr")
+  ASSIGNMENT = Variable("assignment")
+  IFSTATEMENT = Variable("ifStatement")
+  WHILESTATEMENT = Variable("whileStatement")
+  RETURNSTATEMENT = Variable("returnStatement")
+  STATEMENT = Variable("statement")
+  ASSIGN = Terminal("\":=\"")
+  STATSEQUENCE = Variable("statSequence")
+  IF = Terminal("\"if\"")
+  THEN = Terminal("\"then\"")
+  ELSE = Terminal("\"else\"")
+  DO = Terminal("\"do\"")
+  BEGIN = Terminal("\"begin\"")
+  END = Terminal("\"end\"")
+  WHILE = Terminal("\"while\"")
+  RETURN = Terminal("\"return\"")
+  SEMICOLON = Terminal("\";\"")
+  COLON = Terminal("\":\"")
+  VARDECLARATION = Variable("varDeclaration")
+  VARDECLSEQUENCE = Variable("varDeclSequence")
+  VARDECL = Variable("varDecl")
+  SUBROUTINEDECL = Variable("subroutineDecl")
+  PROCEDUREDECL = Variable("procedureDecl")
+  FUNCTIONDECL = Variable("functionDecl")
+  FORMALPARAM = Variable("formalParam")
+  SUBROUTINEBODY = Variable("subroutineBody")
+  VAR = Terminal("\"var\"")
+  PROCEDURE = Terminal("\"procedure\"")
+  FUNCTION = Terminal("\"function\"")
+  MODULE = Variable("module")
+  TERMINALMODULE = Terminal("\"module\"")
+  DOT = Terminal("\".\"")
+
+  TERMOP = Variable("termOp") # because of ["+" | "-"]
+  PLUS = Terminal("\"+\"")
+  MINUS = Terminal("\"-\"")
+  OR = Terminal("\"||\"")
+  pt1 = Production(TERMOP, String([PLUS]))
+  pt2 = Production(TERMOP, String([MINUS]))
+  pt3 = Production(TERMOP, String([OR]))
+
+  p1 = Production(TYPE, String([BASETYPE]))
+  p2 = Production(TYPE, String([TYPE, LBRAK, NUMBER, RBRAK]))
+  p3 = Production(TYPE, String([TYPE, LBRAK, RBRAK]))
+  p4 = Production(QUALIDENT, String([IDENT]))
+  p5 = Production(QUALIDENT, String([QUALIDENT, LBRAK, EXPRESSION, RBRAK]))
+  p6 = Production(FACTOR, String([QUALIDENT]))
+  p7 = Production(FACTOR, String([NUMBER]))
+  p8 = Production(FACTOR, String([BOOLEAN]))
+  p9 = Production(FACTOR, String([CHAR]))
+  p10 = Production(FACTOR, String([STRING]))
+  p11 = Production(FACTOR, String([LPAREN, EXPRESSION, RPAREN]))
+  p12 = Production(FACTOR, String([SUBROUTINECALL]))
+  p13 = Production(FACTOR, String([NOT, FACTOR]))
+  p14 = Production(TERM, String([FACTOR]))
+  p15 = Production(TERM, String([TERM, FACTOP, FACTOR]))
+  p16 = Production(SIMPLEEXPR, String([TERM]))
+  p17 = Production(SIMPLEEXPR, String([PLUS, TERM]))
+  p18 = Production(SIMPLEEXPR, String([MINUS, TERM]))
+  p19 = Production(SIMPLEEXPR, String([SIMPLEEXPR, TERMOP, TERM]))
+  p20 = Production(EXPRESSION, String([SIMPLEEXPR]))
+  p21 = Production(EXPRESSION, String([SIMPLEEXPR, RELOP, SIMPLEEXPR]))
+  p22 = Production(ASSIGNMENT, String([QUALIDENT, ASSIGN, EXPRESSION]))
+  # add EXPRESSIONS...
+  EXPRESSIONS = Variable("expressions")
+  COMMA = Terminal("\",\"")
+  p24_1 = Production(EXPRESSIONS, String([EXPRESSION]))
+  p24_2 = Production(EXPRESSIONS, String([EXPRESSIONS, COMMA, EXPRESSION]))
+  p23 = Production(SUBROUTINECALL, String([IDENT, LPAREN, RPAREN]))
+  p24 = Production(SUBROUTINECALL, String([IDENT, LPAREN, EXPRESSIONS, RPAREN]))
+
+  p25 = Production(IFSTATEMENT, String([IF, LPAREN, EXPRESSION, RPAREN, THEN, STATSEQUENCE, END]))
+  p26 = Production(IFSTATEMENT, String([IF, LPAREN, EXPRESSION, RPAREN, THEN, STATSEQUENCE, ELSE, STATSEQUENCE, END]))
+
+  p27 = Production(WHILESTATEMENT, String([WHILE, LPAREN, EXPRESSION, RPAREN, DO, STATSEQUENCE, END]))
+
+  p28 = Production(RETURNSTATEMENT, String([RETURN]))
+  p29 = Production(RETURNSTATEMENT, String([RETURN, EXPRESSION]))
+
+  p30 = Production(STATEMENT, String([ASSIGNMENT]))
+  p31 = Production(STATEMENT, String([SUBROUTINECALL]))
+  p32 = Production(STATEMENT, String([IFSTATEMENT]))
+  p33 = Production(STATEMENT, String([WHILESTATEMENT]))
+  p34 = Production(STATEMENT, String([RETURNSTATEMENT]))
+
+  p35 = Production(STATSEQUENCE, String([])) # MIGHT CAUSE TROUBLE??? TODO???
+  p36 = Production(STATSEQUENCE, String([STATEMENT]))
+  p37 = Production(STATSEQUENCE, String([STATSEQUENCE, SEMICOLON, STATEMENT]))
+
+  p38 = Production(VARDECLARATION, String([]))
+  p39 = Production(VARDECLARATION, String([VAR, VARDECLSEQUENCE, SEMICOLON]))
+
+  p40 = Production(VARDECLSEQUENCE, String([VARDECL]))
+  p41 = Production(VARDECLSEQUENCE, String([VARDECLSEQUENCE, SEMICOLON, VARDECL]))
+
+  # add IDENTS
+  IDENTS = Variable("idents")
+  p42_1 = Production(IDENTS, String([IDENT]))
+  p42_4 = Production(IDENTS, String([IDENTS, COMMA, IDENT]))
+  p42 = Production(VARDECL, String([IDENTS, COLON, TYPE]))
+
+  p43 = Production(SUBROUTINEDECL, String([PROCEDUREDECL, SUBROUTINEBODY, IDENT, SEMICOLON]))
+  p44 = Production(SUBROUTINEDECL, String([FUNCTIONDECL, SUBROUTINEBODY, IDENT, SEMICOLON]))
+
+  p45 = Production(PROCEDUREDECL, String([PROCEDURE, IDENT, SEMICOLON]))
+  p46 = Production(PROCEDUREDECL, String([PROCEDURE, IDENT, FORMALPARAM, SEMICOLON]))
+
+  p47 = Production(PROCEDUREDECL, String([FUNCTION, IDENT, COLON, TYPE, SEMICOLON]))
+  p48 = Production(PROCEDUREDECL, String([FUNCTION, IDENT, FORMALPARAM, COLON, TYPE, SEMICOLON]))
+
+  p49 = Production(FORMALPARAM, String([LPAREN, RPAREN]))
+  p50 = Production(FORMALPARAM, String([LPAREN, VARDECLSEQUENCE, RPAREN]))
+
+  p51 = Production(SUBROUTINEBODY, String([VARDECLARATION, BEGIN, STATSEQUENCE, END]))
+
+  # add SUBROUTINEDECLS
+  SUBROUTINEDECLS = Variable("subroutineDecls")
+  p52_1 = Production(SUBROUTINEDECLS, String([]))
+  p52_2 = Production(SUBROUTINEDECLS, String([SUBROUTINEDECL]))
+  p52_3 = Production(SUBROUTINEDECLS, String([SUBROUTINEDECLS, SUBROUTINEDECL]))
+  p52 = Production(MODULE, String([TERMINALMODULE, IDENT, SEMICOLON, VARDECLARATION, SUBROUTINEDECLS, BEGIN, STATSEQUENCE, END, IDENT, DOT]))
+
+  ps = [pt1,pt2,pt3,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24_1,p24_2,p24,p25,p26,p27,p28,p29,p30,p31,p32,p33 \
+        p34,p35,p36,p37,p38,p39,p40,p41,p42_1,p42_2,p42,p43,p44,p45,p46,p47,p48,p49,p50,p51,p52_1,p52_2,p52_3,p52]
+
+  draw_CanonicalLR_0(MODULE, ps)
+
 def main():
-  test()
+  snupl_test()
 
 if __name__ == "__main__":
   main()

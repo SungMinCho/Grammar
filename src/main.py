@@ -1,5 +1,46 @@
 from copy import deepcopy
 
+def printSet(s):
+  for x in s:
+    print(x)
+
+def inDeep(x, l):
+  for y in l:
+    if x == y:
+      return True
+  return False
+
+def setEqual(s1, s2):
+  for x in s1:
+    if not inDeep(x, s2):
+      return False
+
+  for x in s2:
+    if not inDeep(x, s1):
+      return False
+
+  return True
+
+def inDeepSet(s, ss):
+  for s2 in ss:
+    if setEqual(s, s2):
+      return True
+  return False
+
+def findKeyByValue(v, d):
+  for k in d:
+    if d[k] == v:
+      return k
+  return None
+
+def findKeyByValueSet(v, d):
+  for k in d:
+    if setEqual(d[k],v):
+      return k
+  return None
+
+####################################################################################
+
 class Symbol:
   def __init__(self, symbol):
     self.symbol = symbol
@@ -12,6 +53,9 @@ class Symbol:
 
   def __str__(self):
     return self.symbol
+
+  def __hash__(self):
+    return hash(self.__dict__.values())
 
   def isTerminal(self):
     return True
@@ -35,11 +79,10 @@ class String:
 
   # order by number of symbols
   def __lt__(self, other):
-    #return self.variableCount() < other.variableCount()
     return len(self.symbols) < len(other.symbols)
 
   def __eq__(self, other):
-    if len(self.symbols) != len(self.symbols):
+    if len(self.symbols) != len(other.symbols):
       return False
     for i in range(len(self.symbols)):
       if self.symbols[i] != other.symbols[i]:
@@ -63,7 +106,7 @@ class String:
     return cnt
 
   def applyProduction(self, production):
-    if production.head not in self.symbols:
+    if not inDeep(production.head, self.symbols):
       return False
     i = self.symbols.index(production.head)
     self.symbols = self.symbols[:i] + production.body.symbols + self.symbols[i+1:]
@@ -108,7 +151,7 @@ class Item(Production):
     return self.dot >= len(self.body.symbols)
 
   def nextIs(self, X):
-    if self.dotAtEnd:
+    if self.dotAtEnd():
       return False
     return X == self.body.symbols[self.dot]
 
@@ -170,7 +213,7 @@ def closure(itemSet, productions):
     buffer = []
     for s in itemSet:
       for x in s.closureStep(productions):
-        if x not in itemSet:
+        if not inDeep(x, itemSet) and not inDeep(x, buffer):
           buffer.append(x)
 
     if len(buffer) == 0:
@@ -186,8 +229,57 @@ def goto(itemSet, X, productions):
       res.add(s.moveDotToRight())
   return closure(res, productions)
 
+def grammarSymbols(productions):
+  res = set()
+  for p in productions:
+    res.add(p.head)
+    for s in p.body.symbols:
+      res.add(s)
+  return res
+
 def CanonicalLR_0(starting, productions):
-  pass
+  syms = grammarSymbols(productions)
+
+  NumberToItems = {}
+  transition = []
+  dummyname = starting.symbol + "'"
+  if dummyname in syms:
+    dummyname = "dummy" + starting.symbol
+  if dummyname in syms:
+    assert(False and "dummyname already exists")
+  dummyStart = Variable(dummyname)
+  dummyItem = Item(dummyStart, String([starting]), 0)
+  initial = {dummyItem}
+  initial = closure(initial, productions)
+
+
+  cnt = 0
+  buffer = [(initial, 0)]
+
+  while len(buffer) > 0:
+    (h,num) = buffer.pop(0)
+
+    NumberToItems[num] = h
+
+    for sym in syms:
+      g = goto(h, sym, productions)
+      if len(g) > 0:
+        if inDeepSet(g, NumberToItems.values()):
+          num2 = findKeyByValueSet(g, NumberToItems)
+        elif inDeepSet(g, [x[0] for x in buffer]):
+          num2 = 0
+          for x in buffer:
+            if x[0] == g:
+              num2 = x[1]
+              break
+        else:
+          cnt += 1
+          num2 = cnt
+          buffer.append((g, num2))
+        transition.append((num, sym, num2))
+
+  return (NumberToItems, transition)
+
 
 ####################################################################################
 
@@ -215,24 +307,11 @@ def test():
 
   ps = [p1,p2,p3,p4, p5]
 
-  """cnt = 0
-  for s in enumerate(E, ps):
-    print(s)
-    cnt += 1
-    if cnt > 500:
-      exit(0)"""
-
-  p11 = Production(E, s1)
-
-  I1 = Item.fromProduction(p1, 0)
-  I2 = Item.fromProduction(p11, 2)
-
-  S = {I1}
-  print(S)
-  S.add(I2)
-  print(S)
-  for s in S:
-    print(s)
+  (NtoI, trans) = CanonicalLR_0(E, ps)
+  for i in range(len(NtoI)):
+    print('#', i)
+    printSet(NtoI[i])
+    print()
 
 def main():
   test()
